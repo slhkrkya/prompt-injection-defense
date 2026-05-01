@@ -18,6 +18,7 @@ DEFENDED_MODEL_PATH = REPO_ROOT / "src" / "official_stacks" / "defensivetoken" /
 def resolve_model_path(mode: str, dry_run: bool) -> str:
     if mode == "baseline":
         return TARGET_MODEL
+    # defense and bilstm-defense both use the defended model
     if DEFENDED_MODEL_PATH.exists() or dry_run:
         return str(DEFENDED_MODEL_PATH)
     return str(prepare_defended_model(TARGET_MODEL))
@@ -46,7 +47,8 @@ def write_report(mode: str, model_name_or_path: str, metrics: dict) -> Path:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=["baseline", "defense"], required=True)
+    parser.add_argument("--mode", choices=["baseline", "defense", "bilstm-defense"], required=True)
+    parser.add_argument("--bilstm-checkpoint", default=None, help="Path to bilstm_checkpoint.pt (required for bilstm-defense)")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--skip-gcg", action="store_true")
     args = parser.parse_args()
@@ -67,7 +69,13 @@ def main() -> None:
 
     from src.official_stacks.meta_secalign.qwen_alpaca import run_qwen_alpaca_eval
 
-    metrics = run_qwen_alpaca_eval(args.mode, model_name_or_path, str(OPENAI_CONFIG_PATH), include_gcg=not args.skip_gcg)
+    metrics = run_qwen_alpaca_eval(
+        args.mode,
+        model_name_or_path,
+        str(OPENAI_CONFIG_PATH),
+        include_gcg=not args.skip_gcg,
+        bilstm_checkpoint=args.bilstm_checkpoint,
+    )
     report_path = write_report(args.mode, model_name_or_path, metrics)
     print(json.dumps({"report": str(report_path), "metrics": metrics}, ensure_ascii=False, indent=2))
 

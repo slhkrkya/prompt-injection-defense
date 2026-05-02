@@ -40,6 +40,19 @@ def generate_training_data(data_path: str) -> tuple[list[str], list[int]]:
     return texts, labels
 
 
+def load_deepset_train() -> tuple[list[str], list[int]]:
+    """Load deepset/prompt-injections train split for training enrichment."""
+    from datasets import load_dataset
+    ds = load_dataset("deepset/prompt-injections", split="train")
+    texts, labels = [], []
+    for row in ds:
+        t = str(row.get("text", "") or "").strip()
+        if t:
+            texts.append(t)
+            labels.append(int(row.get("label", 0)))
+    return texts, labels
+
+
 class _InjectionDataset(Dataset):
     def __init__(self, texts: list[str], labels: list[int], tokenizer: WordTokenizer, max_len: int = 512):
         self.samples = [(tokenizer.encode(t, max_len), l) for t, l in zip(texts, labels)]
@@ -68,12 +81,23 @@ def train(
     batch_size: int = 64,
     lr: float = 1e-3,
     seed: int = 42,
+    include_deepset: bool = True,
 ) -> None:
     random.seed(seed)
     torch.manual_seed(seed)
 
     print("Generating training data...")
     texts, labels = generate_training_data(data_path)
+
+    if include_deepset:
+        print("  deepset/prompt-injections train split ekleniyor...")
+        try:
+            ds_texts, ds_labels = load_deepset_train()
+            texts.extend(ds_texts)
+            labels.extend(ds_labels)
+            print(f"  +{len(ds_texts)} örnek (injection={sum(ds_labels)}, clean={len(ds_labels)-sum(ds_labels)})")
+        except Exception as exc:
+            print(f"  UYARI: deepset yüklenemedi, sadece Alpaca verisiyle devam ediliyor — {exc}")
 
     combined = list(zip(texts, labels))
     random.shuffle(combined)
@@ -173,5 +197,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--no-deepset", action="store_true", help="deepset train split'ini ekleme")
     args = parser.parse_args()
-    train(args.data, args.output, args.epochs, args.batch_size, args.lr, args.seed)
+    train(args.data, args.output, args.epochs, args.batch_size, args.lr, args.seed,
+          include_deepset=not args.no_deepset)

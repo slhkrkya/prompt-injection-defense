@@ -1,19 +1,15 @@
 """
 OOD evaluation of the Bi-LSTM injection detector.
 
-Uses two publicly available datasets (no auth required):
-  1. deepset/prompt-injections  — labeled injection vs. clean prompts
-  2. JasperLS/prompt-injection  — second source for diversity
-
-Both are out-of-distribution: the model was trained only on Alpaca-derived
-synthetic attacks and has never seen these examples.
+Uses the deepset/prompt-injections TEST split as the held-out evaluation set.
+The train split of this dataset is used during model training, so only the
+test split is genuinely out-of-distribution for the final model.
 
 Usage:
     python scripts/eval_bilstm_ood.py \
         --checkpoint bilstm_checkpoint.pt \
         --output docs/raporlar/bilstm_ood.json \
-        [--threshold 0.5] \
-        [--max-samples 1000]
+        [--threshold 0.5]
 """
 
 import argparse
@@ -26,58 +22,20 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 
-def _load_deepset() -> tuple[list[str], list[int]]:
-    """deepset/prompt-injections: 'text' + 'label' (0=clean, 1=injection)."""
+def load_ood_data() -> tuple[list[str], list[int], dict]:
+    """Load deepset/prompt-injections TEST split (never seen during training)."""
     from datasets import load_dataset
-    ds = load_dataset("deepset/prompt-injections", split="train")
+
+    print("  deepset/prompt-injections test split yükleniyor...")
+    ds = load_dataset("deepset/prompt-injections", split="test")
     texts, labels = [], []
     for row in ds:
         t = str(row.get("text", "") or "").strip()
         if t:
             texts.append(t)
             labels.append(int(row.get("label", 0)))
-    return texts, labels
-
-
-def _load_jasper() -> tuple[list[str], list[int]]:
-    """JasperLS/prompt-injection: 'text' + 'label' (0=clean, 1=injection)."""
-    from datasets import load_dataset
-    ds = load_dataset("JasperLS/prompt-injection", split="train")
-    texts, labels = [], []
-    for row in ds:
-        t = str(row.get("text", "") or "").strip()
-        if t:
-            texts.append(t)
-            labels.append(int(row.get("label", 0)))
-    return texts, labels
-
-
-def load_ood_data(max_samples: int | None = None) -> tuple[list[str], list[int], dict]:
-    """Load and merge OOD datasets. Returns (texts, labels, source_info)."""
-    sources: dict[str, int] = {}
-    all_texts: list[str] = []
-    all_labels: list[int] = []
-
-    for name, loader in [("deepset/prompt-injections", _load_deepset),
-                          ("JasperLS/prompt-injection", _load_jasper)]:
-        try:
-            print(f"  {name} yükleniyor...")
-            t, l = loader()
-            sources[name] = len(t)
-            all_texts.extend(t)
-            all_labels.extend(l)
-            print(f"    {len(t)} örnek  (injection={sum(l)}, clean={len(l)-sum(l)})")
-        except Exception as exc:
-            print(f"    UYARI: {name} yüklenemedi — {exc}")
-
-    if not all_texts:
-        raise RuntimeError("Hiçbir OOD dataset yüklenemedi.")
-
-    if max_samples and len(all_texts) > max_samples:
-        all_texts = all_texts[:max_samples]
-        all_labels = all_labels[:max_samples]
-
-    return all_texts, all_labels, sources
+    print(f"    {len(texts)} örnek  (injection={sum(labels)}, clean={len(labels)-sum(labels)})")
+    return texts, labels, {"deepset/prompt-injections (test)": len(texts)}
 
 
 def evaluate(
@@ -154,11 +112,10 @@ def main() -> None:
     parser.add_argument("--checkpoint", default=str(REPO_ROOT / "bilstm_checkpoint.pt"))
     parser.add_argument("--output", default=str(REPO_ROOT / "docs" / "raporlar" / "bilstm_ood.json"))
     parser.add_argument("--threshold", type=float, default=0.5)
-    parser.add_argument("--max-samples", type=int, default=None)
     args = parser.parse_args()
 
-    print("OOD dataset'ler yükleniyor...")
-    texts, labels, sources = load_ood_data(max_samples=args.max_samples)
+    print("OOD dataset yükleniyor...")
+    texts, labels, sources = load_ood_data()
 
     results = evaluate(args.checkpoint, texts, labels, threshold=args.threshold)
     results["datasets"] = sources

@@ -336,7 +336,7 @@ def _build_gcg_config(log_dir: Path):
     config.log_freq = 20
     config.adv_suffix_init = "! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !"
     config.init_suffix_len = -1
-    config.num_steps = 500
+    config.num_steps = 200
     config.fixed_params = True
     config.allow_non_ascii = False
     config.batch_size = 32
@@ -373,7 +373,7 @@ def _run_gcg_eval_fn(model, tokenizer, prompt: str):
     return int(in_response), int(begin_with), [(text, in_response)]
 
 
-def run_gcg_eval(model_name_or_path: str, data_path: str, output_root: Path):
+def run_gcg_eval(model_name_or_path: str, data_path: str, output_root: Path, max_samples: int = 50):
     cache_path = output_root / "gcg_stage.json"
     cached = _load_stage_cache(cache_path)
     if cached and _artifact_exists(str(cached.get("artifact", ""))):
@@ -401,7 +401,8 @@ def run_gcg_eval(model_name_or_path: str, data_path: str, output_root: Path):
         not_allowed_tokens=get_nonascii_toks(tokenizer),
     )
 
-    rows = [row for row in jload(data_path) if str(row.get("input", "")).strip()]
+    all_rows = [row for row in jload(data_path) if str(row.get("input", "")).strip()]
+    rows = all_rows[:max_samples] if max_samples > 0 else all_rows
     attack_name = str(attack).replace(f"{attack.name}_", "")
     log_dir = output_root / attack.name / attack_name
     for sample_id, row in enumerate(rows):
@@ -512,7 +513,7 @@ def _build_bilstm_payload(win_rate: float, asr: float, utility_artifact: Path, a
     }
 
 
-def run_qwen_alpaca_eval(mode: str, model_name_or_path: str, openai_config_path: str, include_gcg: bool = True, bilstm_checkpoint: str | None = None) -> dict:
+def run_qwen_alpaca_eval(mode: str, model_name_or_path: str, openai_config_path: str, include_gcg: bool = True, bilstm_checkpoint: str | None = None, gcg_max_samples: int = 50) -> dict:
     data_path = str(ensure_alpaca_data_file())
     output_root = get_output_root(model_name_or_path)
     output_root.mkdir(parents=True, exist_ok=True)
@@ -527,7 +528,7 @@ def run_qwen_alpaca_eval(mode: str, model_name_or_path: str, openai_config_path:
     gcg_asr = None
     gcg_artifact = None
     if include_gcg:
-        gcg_asr, gcg_artifact = run_gcg_eval(model_name_or_path, data_path, output_root)
+        gcg_asr, gcg_artifact = run_gcg_eval(model_name_or_path, data_path, output_root, max_samples=gcg_max_samples)
     win_rate, utility_artifact = run_utility_eval(model_name_or_path, data_path, output_root, openai_config_path)
     asr, asr_artifacts = run_asr_eval(model_name_or_path, data_path, output_root)
 

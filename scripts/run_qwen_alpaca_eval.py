@@ -51,6 +51,7 @@ def main() -> None:
     parser.add_argument("--bilstm-checkpoint", default=None, help="Path to bilstm_checkpoint.pt (required for bilstm-defense)")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--skip-gcg", action="store_true")
+    parser.add_argument("--gcg-max-samples", type=int, default=50, help="Max samples for GCG eval (default: 50)")
     args = parser.parse_args()
 
     if not OPENAI_CONFIG_PATH.exists():
@@ -75,6 +76,7 @@ def main() -> None:
         str(OPENAI_CONFIG_PATH),
         include_gcg=not args.skip_gcg,
         bilstm_checkpoint=args.bilstm_checkpoint,
+        gcg_max_samples=args.gcg_max_samples,
     )
     report_path = write_report(args.mode, model_name_or_path, metrics)
     print(json.dumps({"report": str(report_path), "metrics": metrics}, ensure_ascii=False, indent=2))

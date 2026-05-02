@@ -111,7 +111,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="OOD eval of Bi-LSTM detector")
     parser.add_argument("--checkpoint", default=str(REPO_ROOT / "bilstm_checkpoint.pt"))
     parser.add_argument("--output", default=str(REPO_ROOT / "docs" / "raporlar" / "bilstm_ood.json"))
-    parser.add_argument("--threshold", type=float, default=0.5)
+    parser.add_argument("--threshold", type=float, default=0.3)
     args = parser.parse_args()
 
     print("OOD dataset yükleniyor...")

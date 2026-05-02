@@ -457,7 +457,7 @@ def run_bilstm_defense_eval(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     detector = detector.to(device)
 
-    def classifier(text: str, threshold: float = 0.5) -> bool:
+    def classifier(text: str, threshold: float = 0.3) -> bool:
         ids = tokenizer.encode(text)
         t = torch.tensor([ids], dtype=torch.long).to(device)
         lengths = torch.tensor([len(ids)], dtype=torch.long)

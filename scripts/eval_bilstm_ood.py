@@ -1,9 +1,12 @@
 """
-OOD evaluation of the Bi-LSTM injection detector using the HackAPrompt dataset.
+OOD evaluation of the Bi-LSTM injection detector.
 
-HackAPrompt (https://huggingface.co/datasets/hackaprompt/hackaprompt-dataset) contains
-real-world prompt injection attempts collected from a competition, making it a clean
-out-of-distribution test set — the model has never seen these injection styles.
+Uses two publicly available datasets (no auth required):
+  1. deepset/prompt-injections  — labeled injection vs. clean prompts
+  2. JasperLS/prompt-injection  — second source for diversity
+
+Both are out-of-distribution: the model was trained only on Alpaca-derived
+synthetic attacks and has never seen these examples.
 
 Usage:
     python scripts/eval_bilstm_ood.py \
@@ -23,29 +26,58 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 
-def load_hackaprompt(max_samples: int | None = None) -> tuple[list[str], list[int]]:
-    """Load HackAPrompt dataset. Returns (texts, labels) where label=1 means injection."""
+def _load_deepset() -> tuple[list[str], list[int]]:
+    """deepset/prompt-injections: 'text' + 'label' (0=clean, 1=injection)."""
     from datasets import load_dataset
-
-    print("HackAPrompt dataset indiriliyor (ilk seferinde birkaç saniye sürebilir)...")
-    ds = load_dataset("hackaprompt/hackaprompt-dataset", split="train", trust_remote_code=True)
-
-    texts: list[str] = []
-    labels: list[int] = []
-
+    ds = load_dataset("deepset/prompt-injections", split="train")
+    texts, labels = [], []
     for row in ds:
-        user_input = str(row.get("user_input", "") or "").strip()
-        if not user_input:
-            continue
-        # level > 0 means there was an active injection challenge → injection attempt
-        level = int(row.get("level", 0) or 0)
-        label = 1 if level > 0 else 0
-        texts.append(user_input)
-        labels.append(label)
-        if max_samples and len(texts) >= max_samples:
-            break
-
+        t = str(row.get("text", "") or "").strip()
+        if t:
+            texts.append(t)
+            labels.append(int(row.get("label", 0)))
     return texts, labels
+
+
+def _load_jasper() -> tuple[list[str], list[int]]:
+    """JasperLS/prompt-injection: 'text' + 'label' (0=clean, 1=injection)."""
+    from datasets import load_dataset
+    ds = load_dataset("JasperLS/prompt-injection", split="train")
+    texts, labels = [], []
+    for row in ds:
+        t = str(row.get("text", "") or "").strip()
+        if t:
+            texts.append(t)
+            labels.append(int(row.get("label", 0)))
+    return texts, labels
+
+
+def load_ood_data(max_samples: int | None = None) -> tuple[list[str], list[int], dict]:
+    """Load and merge OOD datasets. Returns (texts, labels, source_info)."""
+    sources: dict[str, int] = {}
+    all_texts: list[str] = []
+    all_labels: list[int] = []
+
+    for name, loader in [("deepset/prompt-injections", _load_deepset),
+                          ("JasperLS/prompt-injection", _load_jasper)]:
+        try:
+            print(f"  {name} yükleniyor...")
+            t, l = loader()
+            sources[name] = len(t)
+            all_texts.extend(t)
+            all_labels.extend(l)
+            print(f"    {len(t)} örnek  (injection={sum(l)}, clean={len(l)-sum(l)})")
+        except Exception as exc:
+            print(f"    UYARI: {name} yüklenemedi — {exc}")
+
+    if not all_texts:
+        raise RuntimeError("Hiçbir OOD dataset yüklenemedi.")
+
+    if max_samples and len(all_texts) > max_samples:
+        all_texts = all_texts[:max_samples]
+        all_labels = all_labels[:max_samples]
+
+    return all_texts, all_labels, sources
 
 
 def evaluate(
@@ -66,8 +98,8 @@ def evaluate(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     detector = detector.to(device)
 
-    print(f"Model yüklendi. Device: {device}  Threshold: {threshold}")
-    print(f"Toplam örnek: {len(texts)}  (injection={sum(labels)}, clean={len(labels)-sum(labels)})")
+    print(f"\nModel yüklendi — device: {device}  threshold: {threshold}")
+    print(f"Toplam: {len(texts)}  injection={sum(labels)}  clean={len(labels)-sum(labels)}")
 
     preds: list[int] = []
     scores: list[float] = []
@@ -89,7 +121,6 @@ def evaluate(
         scores.extend(probs)
         preds.extend([1 if p > threshold else 0 for p in probs])
 
-    # Metrics
     tp = sum(p == 1 and l == 1 for p, l in zip(preds, labels))
     fp = sum(p == 1 and l == 0 for p, l in zip(preds, labels))
     tn = sum(p == 0 and l == 0 for p, l in zip(preds, labels))
@@ -99,10 +130,9 @@ def evaluate(
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
     recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
     f1        = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
-    fpr       = fp / (fp + tn) if (fp + tn) > 0 else 0.0  # false positive rate = utility cost
+    fpr       = fp / (fp + tn) if (fp + tn) > 0 else 0.0
 
     return {
-        "dataset": "hackaprompt/hackaprompt-dataset",
         "checkpoint": checkpoint_path,
         "threshold": threshold,
         "n_total": len(labels),
@@ -120,28 +150,31 @@ def evaluate(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="OOD eval of Bi-LSTM detector on HackAPrompt")
+    parser = argparse.ArgumentParser(description="OOD eval of Bi-LSTM detector")
     parser.add_argument("--checkpoint", default=str(REPO_ROOT / "bilstm_checkpoint.pt"))
     parser.add_argument("--output", default=str(REPO_ROOT / "docs" / "raporlar" / "bilstm_ood.json"))
     parser.add_argument("--threshold", type=float, default=0.5)
-    parser.add_argument("--max-samples", type=int, default=None, help="Kaç örnek kullanılsın (None=hepsi)")
+    parser.add_argument("--max-samples", type=int, default=None)
     args = parser.parse_args()
 
-    texts, labels = load_hackaprompt(max_samples=args.max_samples)
+    print("OOD dataset'ler yükleniyor...")
+    texts, labels, sources = load_ood_data(max_samples=args.max_samples)
+
     results = evaluate(args.checkpoint, texts, labels, threshold=args.threshold)
+    results["datasets"] = sources
 
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    print("\n=== OOD Evaluation Results (HackAPrompt) ===")
+    print("\n=== OOD Evaluation Results ===")
     m = results["metrics"]
-    print(f"  Accuracy          : {m['accuracy']:.4f}")
-    print(f"  Precision         : {m['precision']:.4f}")
-    print(f"  Recall            : {m['recall']:.4f}")
-    print(f"  F1                : {m['f1']:.4f}")
+    print(f"  Accuracy           : {m['accuracy']:.4f}")
+    print(f"  Precision          : {m['precision']:.4f}")
+    print(f"  Recall             : {m['recall']:.4f}")
+    print(f"  F1                 : {m['f1']:.4f}")
     print(f"  False Positive Rate: {m['false_positive_rate']:.4f}  (utility cost)")
-    print(f"\nRapor kaydedildi: {out_path}")
+    print(f"\nRapor: {out_path}")
 
 
 if __name__ == "__main__":

@@ -53,6 +53,34 @@ def load_deepset_train() -> tuple[list[str], list[int]]:
     return texts, labels
 
 
+def load_rogue_security(local_path: str | None = None, hf_token: str | None = None) -> tuple[list[str], list[int]]:
+    """Load rogue-security/prompt-injections-benchmark from local CSV or HF Hub."""
+    import csv
+    texts, labels = [], []
+
+    if local_path:
+        with open(local_path, encoding="utf-8", newline="") as f:
+            for row in csv.DictReader(f):
+                t = str(row.get("text", "") or "").strip()
+                if not t:
+                    continue
+                raw_label = str(row.get("label", "benign")).strip().lower()
+                texts.append(t)
+                labels.append(0 if raw_label == "benign" else 1)
+        return texts, labels
+
+    from datasets import load_dataset
+    ds = load_dataset("rogue-security/prompt-injections-benchmark", token=hf_token, split="train")
+    for row in ds:
+        t = str(row.get("text", "") or "").strip()
+        if not t:
+            continue
+        raw_label = str(row.get("label", "benign")).strip().lower()
+        texts.append(t)
+        labels.append(0 if raw_label == "benign" else 1)
+    return texts, labels
+
+
 class _InjectionDataset(Dataset):
     def __init__(self, texts: list[str], labels: list[int], tokenizer: WordTokenizer, max_len: int = 512):
         self.samples = [(tokenizer.encode(t, max_len), l) for t, l in zip(texts, labels)]
@@ -82,6 +110,8 @@ def train(
     lr: float = 1e-3,
     seed: int = 42,
     include_deepset: bool = True,
+    hf_token: str | None = None,
+    rogue_security_path: str | None = None,
 ) -> None:
     random.seed(seed)
     torch.manual_seed(seed)
@@ -97,7 +127,17 @@ def train(
             labels.extend(ds_labels)
             print(f"  +{len(ds_texts)} örnek (injection={sum(ds_labels)}, clean={len(ds_labels)-sum(ds_labels)})")
         except Exception as exc:
-            print(f"  UYARI: deepset yüklenemedi, sadece Alpaca verisiyle devam ediliyor — {exc}")
+            print(f"  UYARI: deepset yüklenemedi — {exc}")
+
+    if rogue_security_path or hf_token:
+        print("  rogue-security/prompt-injections-benchmark ekleniyor...")
+        try:
+            rs_texts, rs_labels = load_rogue_security(local_path=rogue_security_path, hf_token=hf_token)
+            texts.extend(rs_texts)
+            labels.extend(rs_labels)
+            print(f"  +{len(rs_texts)} örnek (injection={sum(rs_labels)}, clean={len(rs_labels)-sum(rs_labels)})")
+        except Exception as exc:
+            print(f"  UYARI: rogue-security yüklenemedi — {exc}")
 
     combined = list(zip(texts, labels))
     random.shuffle(combined)
@@ -198,6 +238,10 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--no-deepset", action="store_true", help="deepset train split'ini ekleme")
+    parser.add_argument("--hf-token", default=None, help="HuggingFace token (rogue-security HF Hub için)")
+    parser.add_argument("--rogue-security", default=None, help="rogue-security test.csv local yolu")
     args = parser.parse_args()
     train(args.data, args.output, args.epochs, args.batch_size, args.lr, args.seed,
-          include_deepset=not args.no_deepset)
+          include_deepset=not args.no_deepset,
+          hf_token=args.hf_token,
+          rogue_security_path=args.rogue_security)

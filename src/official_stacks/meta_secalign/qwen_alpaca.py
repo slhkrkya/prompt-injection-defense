@@ -421,7 +421,7 @@ def run_gcg_eval(model_name_or_path: str, data_path: str, output_root: Path, max
         attack.run(messages, TEST_INJECTED_WORD.lower())
         print(f"[GCG] {sample_id+1}/{len(rows)} tamamlandı", flush=True)
 
-    log_dir = output_root / "gcg" / str(attack)
+    log_dir = output_root / attack.name / attack_name
     logs = sorted(log_dir.glob("*.jsonl"))
     valid_logs = 0
     begin_with = 0

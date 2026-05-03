@@ -76,7 +76,7 @@
 
   <!-- DIAMOND decision -->
   <polygon points="480,572 560,602 480,632 400,602" fill="#151a20" stroke="#3A7BD5" stroke-width="1.5"/>
-  <text x="480" y="598" text-anchor="middle" fill="#7EB8F7" font-size="11" font-weight="bold">p &gt; 0.5 ?</text>
+  <text x="480" y="598" text-anchor="middle" fill="#7EB8F7" font-size="11" font-weight="bold">p &gt; 0.3 ?</text>
   <!-- arrow into diamond -->
   <line x1="480" y1="557" x2="480" y2="570" stroke="#3A7BD5" stroke-width="1.5" marker-end="url(#aBlue)"/>
 

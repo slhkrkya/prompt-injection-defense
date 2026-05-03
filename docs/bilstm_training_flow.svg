@@ -1,78 +1,107 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 620" font-family="'Segoe UI', Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 780" font-family="'Segoe UI', Arial, sans-serif">
   <defs>
     <marker id="aBlue"   markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3A7BD5"/></marker>
     <marker id="aGreen"  markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5BAD6F"/></marker>
     <marker id="aGray"   markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#777"/></marker>
     <marker id="aOrange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#E8803A"/></marker>
     <marker id="aGold"   markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#D4B840"/></marker>
+    <marker id="aCyan"   markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3ABFBF"/></marker>
+    <marker id="aPink"   markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#C06090"/></marker>
   </defs>
 
   <!-- Background -->
-  <rect width="820" height="620" fill="#0d0f1a" rx="14"/>
+  <rect width="900" height="780" fill="#0d0f1a" rx="14"/>
 
   <!-- Title -->
-  <text x="410" y="34" text-anchor="middle" fill="#E0E0F0" font-size="16" font-weight="bold">Bi-LSTM Injection Detector — Eğitim Akışı</text>
-  <text x="410" y="52" text-anchor="middle" fill="#555" font-size="11">Model: InjectionDetector  •  Veri: AlpacaFarm  •  Çerçeve: PyTorch</text>
+  <text x="450" y="34" text-anchor="middle" fill="#E0E0F0" font-size="16" font-weight="bold">Bi-LSTM Injection Detector — Eğitim Akışı</text>
+  <text x="450" y="52" text-anchor="middle" fill="#555" font-size="11">Model: InjectionDetector  •  Veri: AlpacaFarm + deepset + rogue-security  •  Çerçeve: PyTorch</text>
 
-  <!-- ── DATA SOURCE ── -->
-  <rect x="260" y="68" width="300" height="50" rx="7" fill="#211f0a" stroke="#D4B840" stroke-width="1.5"/>
-  <text x="410" y="90" text-anchor="middle" fill="#F0D060" font-size="13" font-weight="bold">davinci_003_outputs.json</text>
-  <text x="410" y="108" text-anchor="middle" fill="#A08030" font-size="11">~805 AlpacaFarm satırı</text>
+  <!-- ══ DATA SOURCES (3 kutu yan yana) ══ -->
+  <!-- Alpaca -->
+  <rect x="30" y="68" width="240" height="52" rx="7" fill="#211f0a" stroke="#D4B840" stroke-width="1.5"/>
+  <text x="150" y="90" text-anchor="middle" fill="#F0D060" font-size="12" font-weight="bold">davinci_003_outputs.json</text>
+  <text x="150" y="108" text-anchor="middle" fill="#A08030" font-size="11">~805 AlpacaFarm satırı</text>
 
-  <!-- fork arrows -->
-  <line x1="330" y1="118" x2="200" y2="158" stroke="#5BAD6F" stroke-width="1.5" marker-end="url(#aGreen)"/>
-  <line x1="490" y1="118" x2="610" y2="158" stroke="#E8803A" stroke-width="1.5" marker-end="url(#aOrange)"/>
+  <!-- deepset -->
+  <rect x="330" y="68" width="240" height="52" rx="7" fill="#0a1f1f" stroke="#3ABFBF" stroke-width="1.5"/>
+  <text x="450" y="90" text-anchor="middle" fill="#60E0E0" font-size="12" font-weight="bold">deepset/prompt-injections</text>
+  <text x="450" y="108" text-anchor="middle" fill="#2A8080" font-size="11">train split  •  546 örnek</text>
+
+  <!-- rogue-security -->
+  <rect x="630" y="68" width="240" height="52" rx="7" fill="#1a0a1f" stroke="#C06090" stroke-width="1.5"/>
+  <text x="750" y="90" text-anchor="middle" fill="#E080C0" font-size="12" font-weight="bold">rogue-security benchmark</text>
+  <text x="750" y="108" text-anchor="middle" fill="#804060" font-size="11">test.csv  •  5 000 örnek</text>
+
+  <!-- fork arrows from Alpaca -->
+  <line x1="100" y1="120" x2="80"  y2="168" stroke="#5BAD6F" stroke-width="1.5" marker-end="url(#aGreen)"/>
+  <line x1="200" y1="120" x2="340" y2="168" stroke="#E8803A" stroke-width="1.5" marker-end="url(#aOrange)"/>
+
+  <!-- arrows from deepset and rogue-security merging down -->
+  <line x1="450" y1="120" x2="450" y2="148" stroke="#3ABFBF" stroke-width="1.5"/>
+  <line x1="450" y1="148" x2="370" y2="168" stroke="#3ABFBF" stroke-width="1.5" marker-end="url(#aCyan)"/>
+  <line x1="450" y1="148" x2="530" y2="168" stroke="#3ABFBF" stroke-width="1.5" marker-end="url(#aCyan)"/>
+
+  <line x1="750" y1="120" x2="750" y2="148" stroke="#C06090" stroke-width="1.5"/>
+  <line x1="750" y1="148" x2="560" y2="168" stroke="#C06090" stroke-width="1.5" marker-end="url(#aPink)"/>
 
   <!-- ── CLEAN EXAMPLES ── -->
-  <rect x="60" y="160" width="270" height="72" rx="7" fill="#112211" stroke="#5BAD6F" stroke-width="1.5"/>
-  <rect x="60" y="160" width="270" height="22" rx="7" fill="#5BAD6F"/>
-  <rect x="60" y="174" width="270" height="8" fill="#5BAD6F"/>
-  <text x="195" y="176" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Temiz Örnekler  |  label = 0</text>
-  <text x="78"  y="200" fill="#88DD88" font-size="11">• row["input"] olduğu gibi</text>
-  <text x="78"  y="218" fill="#88DD88" font-size="11">• ~805 örnek</text>
+  <rect x="20" y="170" width="270" height="72" rx="7" fill="#112211" stroke="#5BAD6F" stroke-width="1.5"/>
+  <rect x="20" y="170" width="270" height="22" rx="7" fill="#5BAD6F"/>
+  <rect x="20" y="184" width="270" height="8" fill="#5BAD6F"/>
+  <text x="155" y="186" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Temiz Örnekler  |  label = 0</text>
+  <text x="38"  y="210" fill="#88DD88" font-size="11">• Alpaca row["input"] + deepset benign</text>
+  <text x="38"  y="228" fill="#88DD88" font-size="11">• + rogue-security benign  (~4 200 toplam)</text>
 
   <!-- ── ATTACK EXAMPLES ── -->
-  <rect x="490" y="160" width="270" height="72" rx="7" fill="#1f0a0a" stroke="#E8803A" stroke-width="1.5"/>
-  <rect x="490" y="160" width="270" height="22" rx="7" fill="#E8803A"/>
-  <rect x="490" y="174" width="270" height="8" fill="#E8803A"/>
-  <text x="625" y="176" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Saldırılı Örnekler  |  label = 1</text>
-  <text x="508" y="200" fill="#FFAA77" font-size="11">• ignore / completion / completion_ignore</text>
-  <text x="508" y="218" fill="#FFAA77" font-size="11">• ~1200 örnek  (3 × ~400 satır)</text>
+  <rect x="610" y="170" width="270" height="72" rx="7" fill="#1f0a0a" stroke="#E8803A" stroke-width="1.5"/>
+  <rect x="610" y="170" width="270" height="22" rx="7" fill="#E8803A"/>
+  <rect x="610" y="184" width="270" height="8" fill="#E8803A"/>
+  <text x="745" y="186" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Saldırılı Örnekler  |  label = 1</text>
+  <text x="628" y="210" fill="#FFAA77" font-size="11">• ignore / completion / completion_ignore</text>
+  <text x="628" y="228" fill="#FFAA77" font-size="11">• + deepset &amp; rogue-security injection (~2 800)</text>
 
-  <!-- merge arrows -->
-  <line x1="195" y1="232" x2="355" y2="278" stroke="#5BAD6F" stroke-width="1.5" marker-end="url(#aGreen)"/>
-  <line x1="625" y1="232" x2="465" y2="278" stroke="#E8803A" stroke-width="1.5" marker-end="url(#aOrange)"/>
+  <!-- merge arrows to tokenizer -->
+  <line x1="155" y1="242" x2="390" y2="318" stroke="#5BAD6F" stroke-width="1.5" marker-end="url(#aGreen)"/>
+  <line x1="745" y1="242" x2="520" y2="318" stroke="#E8803A" stroke-width="1.5" marker-end="url(#aOrange)"/>
 
   <!-- ── TOKENIZER ── -->
-  <rect x="240" y="280" width="340" height="52" rx="7" fill="#111d2e" stroke="#3A7BD5" stroke-width="1.5"/>
-  <text x="410" y="301" text-anchor="middle" fill="#7EB8F7" font-size="13" font-weight="bold">WordTokenizer</text>
-  <text x="410" y="320" text-anchor="middle" fill="#4A88C7" font-size="11">build_vocab(train_texts)  →  vocab ~5 000 token  •  PAD=0  UNK=1</text>
+  <rect x="270" y="320" width="360" height="52" rx="7" fill="#111d2e" stroke="#3A7BD5" stroke-width="1.5"/>
+  <text x="450" y="341" text-anchor="middle" fill="#7EB8F7" font-size="13" font-weight="bold">WordTokenizer</text>
+  <text x="450" y="360" text-anchor="middle" fill="#4A88C7" font-size="11">build_vocab(train_texts)  →  vocab ~7 000 token  •  PAD=0  UNK=1</text>
 
   <!-- arrow -->
-  <line x1="410" y1="332" x2="410" y2="362" stroke="#777" stroke-width="1.5" marker-end="url(#aGray)"/>
+  <line x1="450" y1="372" x2="450" y2="402" stroke="#777" stroke-width="1.5" marker-end="url(#aGray)"/>
 
   <!-- ── DATASET ── -->
-  <rect x="240" y="364" width="340" height="52" rx="7" fill="#1a1430" stroke="#9B59B6" stroke-width="1.5"/>
-  <text x="410" y="385" text-anchor="middle" fill="#CC88FF" font-size="13" font-weight="bold">InjectionDataset</text>
-  <text x="410" y="404" text-anchor="middle" fill="#8855AA" font-size="11">encode(text, max_len=512)  •  %80 train  /  %20 val  •  collate + padding</text>
+  <rect x="270" y="404" width="360" height="52" rx="7" fill="#1a1430" stroke="#9B59B6" stroke-width="1.5"/>
+  <text x="450" y="425" text-anchor="middle" fill="#CC88FF" font-size="13" font-weight="bold">InjectionDataset</text>
+  <text x="450" y="444" text-anchor="middle" fill="#8855AA" font-size="11">encode(text, max_len=512)  •  %80 train  /  %20 val  •  collate + padding</text>
 
   <!-- arrow -->
-  <line x1="410" y1="416" x2="410" y2="446" stroke="#777" stroke-width="1.5" marker-end="url(#aGray)"/>
+  <line x1="450" y1="456" x2="450" y2="486" stroke="#777" stroke-width="1.5" marker-end="url(#aGray)"/>
 
   <!-- ── MODEL ── -->
-  <rect x="160" y="448" width="500" height="88" rx="7" fill="#101a10" stroke="#44AA44" stroke-width="1.5"/>
-  <rect x="160" y="448" width="500" height="22" rx="7" fill="#44AA44"/>
-  <rect x="160" y="462" width="500" height="8" fill="#44AA44"/>
-  <text x="410" y="464" text-anchor="middle" fill="white" font-size="12" font-weight="bold">InjectionDetector  (Bi-LSTM)</text>
-  <text x="178" y="489" fill="#88DD88" font-size="11">• Embedding(vocab_size, 128)  →  BiLSTM(128→256, layers=2, dropout=0.3)</text>
-  <text x="178" y="507" fill="#88DD88" font-size="11">• Linear(512→1)  •  BCEWithLogitsLoss  •  Adam lr=1e-3  •  20 epoch  •  early stop</text>
-  <text x="178" y="525" fill="#44AA44" font-size="11">• val_acc ≈ %99+  (ignore/completion kalıpları çok belirgin)</text>
+  <rect x="170" y="488" width="560" height="100" rx="7" fill="#101a10" stroke="#44AA44" stroke-width="1.5"/>
+  <rect x="170" y="488" width="560" height="22" rx="7" fill="#44AA44"/>
+  <rect x="170" y="502" width="560" height="8" fill="#44AA44"/>
+  <text x="450" y="504" text-anchor="middle" fill="white" font-size="12" font-weight="bold">InjectionDetector  (Bi-LSTM)</text>
+  <text x="188" y="529" fill="#88DD88" font-size="11">• Embedding(vocab_size, 128)  →  BiLSTM(128→256, layers=2, dropout=0.3)</text>
+  <text x="188" y="547" fill="#88DD88" font-size="11">• Linear(512→1)  •  BCEWithLogitsLoss  •  Adam lr=1e-3  •  20 epoch  •  early stop (patience=5)</text>
+  <text x="188" y="565" fill="#44AA44" font-size="11">• val_acc = %95.4  •  threshold = 0.3  (OOD: F1=0.82, Precision=0.96, Recall=0.72)</text>
 
   <!-- arrow -->
-  <line x1="410" y1="536" x2="410" y2="566" stroke="#D4B840" stroke-width="1.5" marker-end="url(#aGold)"/>
+  <line x1="450" y1="588" x2="450" y2="618" stroke="#D4B840" stroke-width="1.5" marker-end="url(#aGold)"/>
 
   <!-- ── CHECKPOINT ── -->
-  <rect x="240" y="568" width="340" height="40" rx="7" fill="#211f0a" stroke="#D4B840" stroke-width="1.5"/>
-  <text x="410" y="585" text-anchor="middle" fill="#F0D060" font-size="12" font-weight="bold">bilstm_checkpoint.pt</text>
-  <text x="410" y="600" text-anchor="middle" fill="#A08030" font-size="11">model_state_dict  +  vocab  +  model_kwargs  +  val_acc</text>
+  <rect x="270" y="620" width="360" height="40" rx="7" fill="#211f0a" stroke="#D4B840" stroke-width="1.5"/>
+  <text x="450" y="637" text-anchor="middle" fill="#F0D060" font-size="12" font-weight="bold">bilstm_checkpoint.pt</text>
+  <text x="450" y="652" text-anchor="middle" fill="#A08030" font-size="11">model_state_dict  +  vocab  +  model_kwargs  +  val_acc</text>
+
+  <!-- ── DATA SUMMARY ── -->
+  <rect x="270" y="678" width="360" height="82" rx="7" fill="#0d1520" stroke="#3A7BD5" stroke-width="1"/>
+  <text x="450" y="696" text-anchor="middle" fill="#7EB8F7" font-size="11" font-weight="bold">Eğitim Verisi Özeti</text>
+  <text x="288" y="714" fill="#4A88C7" font-size="10">• Alpaca sentetik saldırılar  :  ~14 000 örnek</text>
+  <text x="288" y="729" fill="#4A88C7" font-size="10">• deepset train split           :     546 örnek</text>
+  <text x="288" y="744" fill="#4A88C7" font-size="10">• rogue-security benchmark :   5 000 örnek</text>
+  <text x="450" y="756" text-anchor="middle" fill="#3A7BD5" font-size="10" font-weight="bold">Toplam  ≈  19 500+ örnek</text>
 </svg>

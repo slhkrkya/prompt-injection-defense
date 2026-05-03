@@ -421,7 +421,17 @@ def run_gcg_eval(model_name_or_path: str, data_path: str, output_root: Path, max
         attack.run(messages, TEST_INJECTED_WORD.lower())
         print(f"[GCG] {sample_id+1}/{len(rows)} tamamlandı", flush=True)
 
-    log_dir = output_root / attack.name / attack_name
+    # Free transformers model from VRAM so vLLM can load afterward
+    del attack
+    del model
+    del tokenizer
+    import gc, torch as _torch
+    gc.collect()
+    if _torch.cuda.is_available():
+        _torch.cuda.empty_cache()
+        _torch.cuda.synchronize()
+    print("[GCG] Model VRAM'dan temizlendi.", flush=True)
+
     logs = sorted(log_dir.glob("*.jsonl"))
     valid_logs = 0
     begin_with = 0

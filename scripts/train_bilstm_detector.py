@@ -81,27 +81,32 @@ def load_rogue_security(local_path: str | None = None, hf_token: str | None = No
     return texts, labels
 
 
-def load_hackaprompt(local_path: str, max_samples: int = 10000) -> tuple[list[str], list[int]]:
-    """Load HackAPrompt dataset from local parquet file.
+def load_hackaprompt(local_path: str | None = None, max_samples: int = 10000) -> tuple[list[str], list[int]]:
+    """Load HackAPrompt dataset from local parquet or HuggingFace Hub.
 
     All user_inputs are injection attempts (label=1).
     Successful ones (correct=True) are prioritized; remaining slots filled from failed attempts.
     max_samples caps total to avoid overwhelming class balance.
     """
-    import pyarrow.parquet as pq
-    table = pq.read_table(local_path, columns=["user_input", "correct"])
-    d = table.to_pydict()
-
     seen: set[str] = set()
     successful, failed = [], []
-    for text, correct in zip(d["user_input"], d["correct"]):
+
+    if local_path:
+        import pyarrow.parquet as pq
+        table = pq.read_table(local_path, columns=["user_input", "correct"])
+        rows_iter = zip(table.to_pydict()["user_input"], table.to_pydict()["correct"])
+    else:
+        from datasets import load_dataset
+        ds = load_dataset("hackaprompt/hackaprompt-dataset", split="train")
+        rows_iter = ((row["user_input"], row["correct"]) for row in ds)
+
+    for text, correct in rows_iter:
         t = str(text or "").strip()
         if not t or t in seen:
             continue
         seen.add(t)
         (successful if correct else failed).append(t)
 
-    # prioritise successful injections, then pad with failed attempts
     selected = successful[:max_samples]
     remaining = max_samples - len(selected)
     if remaining > 0:
@@ -144,6 +149,7 @@ def train(
     hf_token: str | None = None,
     rogue_security_path: str | None = None,
     hackaprompt_path: str | None = None,
+    include_hackaprompt: bool = False,
 ) -> None:
     random.seed(seed)
     torch.manual_seed(seed)
@@ -171,10 +177,10 @@ def train(
         except Exception as exc:
             print(f"  UYARI: rogue-security yüklenemedi — {exc}")
 
-    if hackaprompt_path:
+    if hackaprompt_path or include_hackaprompt:
         print("  HackAPrompt dataset ekleniyor...")
         try:
-            hp_texts, hp_labels = load_hackaprompt(hackaprompt_path)
+            hp_texts, hp_labels = load_hackaprompt(local_path=hackaprompt_path)
             texts.extend(hp_texts)
             labels.extend(hp_labels)
             print(f"  +{len(hp_texts)} örnek (hepsi injection=1)")
@@ -283,9 +289,11 @@ if __name__ == "__main__":
     parser.add_argument("--hf-token", default=None, help="HuggingFace token (rogue-security HF Hub için)")
     parser.add_argument("--rogue-security", default=None, help="rogue-security test.csv local yolu")
     parser.add_argument("--hackaprompt", default=None, help="hackaprompt.parquet local yolu")
+    parser.add_argument("--hackaprompt-hf", action="store_true", help="HackAPrompt'u HuggingFace'den indir")
     args = parser.parse_args()
     train(args.data, args.output, args.epochs, args.batch_size, args.lr, args.seed,
           include_deepset=not args.no_deepset,
           hf_token=args.hf_token,
           rogue_security_path=args.rogue_security,
-          hackaprompt_path=args.hackaprompt)
+          hackaprompt_path=args.hackaprompt,
+          include_hackaprompt=args.hackaprompt_hf)

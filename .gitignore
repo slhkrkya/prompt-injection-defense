@@ -27,6 +27,10 @@ data/raw/*
 data/processed/*
 !data/processed/.gitkeep
 
+# Büyük dataset dosyaları (HuggingFace'den indiriliyor, repoya eklenmez)
+*.parquet
+data/hackaprompt-dataset/hackaprompt.parquet
+
 # 5. Loglar ve İşletim Sistemi Kalıntıları
 logs/
 *.log

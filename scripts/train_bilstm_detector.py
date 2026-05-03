@@ -81,7 +81,7 @@ def load_rogue_security(local_path: str | None = None, hf_token: str | None = No
     return texts, labels
 
 
-def load_hackaprompt(local_path: str | None = None, max_samples: int = 10000) -> tuple[list[str], list[int]]:
+def load_hackaprompt(local_path: str | None = None, max_samples: int = 10000, hf_token: str | None = None) -> tuple[list[str], list[int]]:
     """Load HackAPrompt dataset from local parquet or HuggingFace Hub.
 
     All user_inputs are injection attempts (label=1).
@@ -97,7 +97,7 @@ def load_hackaprompt(local_path: str | None = None, max_samples: int = 10000) ->
         rows_iter = zip(table.to_pydict()["user_input"], table.to_pydict()["correct"])
     else:
         from datasets import load_dataset
-        ds = load_dataset("hackaprompt/hackaprompt-dataset", split="train")
+        ds = load_dataset("hackaprompt/hackaprompt-dataset", split="train", token=hf_token)
         rows_iter = ((row["user_input"], row["correct"]) for row in ds)
 
     for text, correct in rows_iter:
@@ -180,7 +180,7 @@ def train(
     if hackaprompt_path or include_hackaprompt:
         print("  HackAPrompt dataset ekleniyor...")
         try:
-            hp_texts, hp_labels = load_hackaprompt(local_path=hackaprompt_path)
+            hp_texts, hp_labels = load_hackaprompt(local_path=hackaprompt_path, hf_token=hf_token)
             texts.extend(hp_texts)
             labels.extend(hp_labels)
             print(f"  +{len(hp_texts)} örnek (hepsi injection=1)")

@@ -81,6 +81,37 @@ def load_rogue_security(local_path: str | None = None, hf_token: str | None = No
     return texts, labels
 
 
+def load_hackaprompt(local_path: str, max_samples: int = 10000) -> tuple[list[str], list[int]]:
+    """Load HackAPrompt dataset from local parquet file.
+
+    All user_inputs are injection attempts (label=1).
+    Successful ones (correct=True) are prioritized; remaining slots filled from failed attempts.
+    max_samples caps total to avoid overwhelming class balance.
+    """
+    import pyarrow.parquet as pq
+    table = pq.read_table(local_path, columns=["user_input", "correct"])
+    d = table.to_pydict()
+
+    seen: set[str] = set()
+    successful, failed = [], []
+    for text, correct in zip(d["user_input"], d["correct"]):
+        t = str(text or "").strip()
+        if not t or t in seen:
+            continue
+        seen.add(t)
+        (successful if correct else failed).append(t)
+
+    # prioritise successful injections, then pad with failed attempts
+    selected = successful[:max_samples]
+    remaining = max_samples - len(selected)
+    if remaining > 0:
+        selected += failed[:remaining]
+
+    print(f"  HackAPrompt: {len(selected)} benzersiz örnek "
+          f"(başarılı={min(len(successful), max_samples)}, başarısız={max(0, len(selected)-min(len(successful), max_samples))})")
+    return selected, [1] * len(selected)
+
+
 class _InjectionDataset(Dataset):
     def __init__(self, texts: list[str], labels: list[int], tokenizer: WordTokenizer, max_len: int = 512):
         self.samples = [(tokenizer.encode(t, max_len), l) for t, l in zip(texts, labels)]
@@ -112,6 +143,7 @@ def train(
     include_deepset: bool = True,
     hf_token: str | None = None,
     rogue_security_path: str | None = None,
+    hackaprompt_path: str | None = None,
 ) -> None:
     random.seed(seed)
     torch.manual_seed(seed)
@@ -138,6 +170,16 @@ def train(
             print(f"  +{len(rs_texts)} örnek (injection={sum(rs_labels)}, clean={len(rs_labels)-sum(rs_labels)})")
         except Exception as exc:
             print(f"  UYARI: rogue-security yüklenemedi — {exc}")
+
+    if hackaprompt_path:
+        print("  HackAPrompt dataset ekleniyor...")
+        try:
+            hp_texts, hp_labels = load_hackaprompt(hackaprompt_path)
+            texts.extend(hp_texts)
+            labels.extend(hp_labels)
+            print(f"  +{len(hp_texts)} örnek (hepsi injection=1)")
+        except Exception as exc:
+            print(f"  UYARI: HackAPrompt yüklenemedi — {exc}")
 
     combined = list(zip(texts, labels))
     random.shuffle(combined)
@@ -240,8 +282,10 @@ if __name__ == "__main__":
     parser.add_argument("--no-deepset", action="store_true", help="deepset train split'ini ekleme")
     parser.add_argument("--hf-token", default=None, help="HuggingFace token (rogue-security HF Hub için)")
     parser.add_argument("--rogue-security", default=None, help="rogue-security test.csv local yolu")
+    parser.add_argument("--hackaprompt", default=None, help="hackaprompt.parquet local yolu")
     args = parser.parse_args()
     train(args.data, args.output, args.epochs, args.batch_size, args.lr, args.seed,
           include_deepset=not args.no_deepset,
           hf_token=args.hf_token,
-          rogue_security_path=args.rogue_security)
+          rogue_security_path=args.rogue_security,
+          hackaprompt_path=args.hackaprompt)

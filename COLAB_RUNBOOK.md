@@ -5,16 +5,16 @@ Bu rehber, projeyi Google Colab notebook hucrelerinde dogrudan calistirmak icin 
 ## Varsayimlar
 
 - Repo Colab icinde `/content/prompt-injection-defense` altina klonlanacak.
-- Klonlama `salihv2` branch'i uzerinden yapilacak.
+- Klonlama `defensive_position` branch'i uzerinden yapilacak.
 - Hedef model yalnizca `Qwen/Qwen2.5-7B-Instruct`.
 - Judge modeli yalnizca `gpt-4o-mini` (AlpacaEval2 protokolu; referans model GPT-4 Turbo, 805 ornek).
-- Calistirilacak deneyler yalnizca `baseline` ve `defense`.
+- Calistirilacak deneyler: `baseline`, `defense` ve token pozisyon ablation (`prefix`, `suffix`, `sandwich`, `per_user`).
 
 ## 1. Repo'yu Klonla
 
 ```python
 %cd /content
-!git clone --branch salihv2 https://github.com/ABerkeBilgin/prompt-injection-defense.git prompt-injection-defense
+!git clone --branch defensive_position https://github.com/ABerkeBilgin/prompt-injection-defense.git prompt-injection-defense
 %cd /content/prompt-injection-defense
 !pwd
 ```
@@ -164,11 +164,62 @@ for name in ["baseline", "defense"]:
 PY
 ```
 
+## 10. Token Pozisyon Ablation
+
+n=5 token sabit, 4 farkli pozisyon karsilastirilir: `prefix` (paper baseline), `suffix`, `sandwich`, `per_user`.
+
+Her pozisyon icin ayri bir model diske kaydedilir (~14 GB/pozisyon). Oncesinde Adim 6'nin tamamlanmis olmasi gerekir.
+
+Dry-run ile yapilandirilmayi kontrol et:
+
+```python
+%cd /content/prompt-injection-defense
+!python scripts/run_ablation.py --dry-run
+```
+
+Tek pozisyon test et (once `suffix`'i dene):
+
+```python
+%cd /content/prompt-injection-defense
+!python scripts/run_ablation.py --positions suffix
+```
+
+Tam grid (tum 4 pozisyon, GCG yok, ~8-16 saat GPU):
+
+```python
+%cd /content/prompt-injection-defense
+!python scripts/run_ablation.py
+```
+
+Belirli pozisyonlari secmek icin:
+
+```python
+%cd /content/prompt-injection-defense
+!python scripts/run_ablation.py --positions prefix suffix sandwich per_user
+```
+
+Ablation sonuclarini gor:
+
+```python
+%cd /content/prompt-injection-defense
+!cat docs/raporlar/ablation/summary.csv
+```
+
+Beklenen `summary.csv` ciktisi:
+
+```
+position,win_rate,asr
+prefix,0.XX,0.XX
+suffix,0.XX,0.XX
+sandwich,0.XX,0.XX
+per_user,0.XX,0.XX
+```
+
 ## Tek Parca Colab Blogu
 
 ```python
 %cd /content
-!git clone --branch salihv2 https://github.com/ABerkeBilgin/prompt-injection-defense.git prompt-injection-defense
+!git clone --branch defensive_position https://github.com/ABerkeBilgin/prompt-injection-defense.git prompt-injection-defense
 %cd /content/prompt-injection-defense
 !pip install -r requirements.txt
 
@@ -189,5 +240,7 @@ YAML
 !python src/model/setup.py
 !python scripts/run_qwen_alpaca_eval.py --mode baseline --skip-gcg
 !python scripts/run_qwen_alpaca_eval.py --mode defense --skip-gcg
+!python scripts/run_ablation.py --dry-run
+!python scripts/run_ablation.py
 ```
 

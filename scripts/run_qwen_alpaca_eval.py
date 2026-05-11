@@ -15,6 +15,19 @@ OPENAI_CONFIG_PATH = DATA_DIR / "openai_configs.yaml"
 DEFENDED_MODEL_PATH = REPO_ROOT / "src" / "official_stacks" / "defensivetoken" / f"{TARGET_MODEL}{OUTPUT_SUFFIX}"
 
 
+_STAGE_CACHE_FILES = ("utility_stage.json", "asr_stage.json", "gcg_stage.json")
+
+
+def _clear_eval_cache(model_name_or_path: str) -> None:
+    from src.official_stacks.meta_secalign.utils import get_output_root
+    output_root = get_output_root(model_name_or_path)
+    for name in _STAGE_CACHE_FILES:
+        p = output_root / name
+        if p.exists():
+            p.unlink()
+            print(f"Cache temizlendi: {p}")
+
+
 def resolve_model_path(mode: str, dry_run: bool) -> str:
     if mode == "baseline":
         return TARGET_MODEL
@@ -49,6 +62,7 @@ def main() -> None:
     parser.add_argument("--mode", choices=["baseline", "defense"], required=True)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--skip-gcg", action="store_true")
+    parser.add_argument("--force", action="store_true", help="Onceki eval cache'ini sil, sifirdan calistir")
     args = parser.parse_args()
 
     if not OPENAI_CONFIG_PATH.exists():
@@ -66,6 +80,9 @@ def main() -> None:
         return
 
     from src.official_stacks.meta_secalign.qwen_alpaca import run_qwen_alpaca_eval
+
+    if args.force:
+        _clear_eval_cache(model_name_or_path)
 
     metrics = run_qwen_alpaca_eval(args.mode, model_name_or_path, str(OPENAI_CONFIG_PATH), include_gcg=not args.skip_gcg)
     report_path = write_report(args.mode, model_name_or_path, metrics)

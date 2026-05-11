@@ -16,6 +16,19 @@ OPENAI_CONFIG_PATH = DATA_DIR / "openai_configs.yaml"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "raporlar" / "ablation"
 
 
+_STAGE_CACHE_FILES = ("utility_stage.json", "asr_stage.json", "gcg_stage.json")
+
+
+def _clear_eval_cache(model_name_or_path: str) -> None:
+    from src.official_stacks.meta_secalign.utils import get_output_root
+    output_root = get_output_root(model_name_or_path)
+    for name in _STAGE_CACHE_FILES:
+        p = output_root / name
+        if p.exists():
+            p.unlink()
+            print(f"Cache temizlendi: {p}")
+
+
 def write_position_report(position: str, metrics: dict, output_dir: Path) -> Path:
     report_path = output_dir / f"{position}.json"
     payload = {
@@ -69,6 +82,11 @@ def main() -> None:
         help="OpenAI config YAML dosyası",
     )
     parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Önceki eval cache'ini sil, sıfırdan çalıştır",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Model hazırlama ve eval yapmadan konfigürasyonu yazdır",
@@ -99,6 +117,9 @@ def main() -> None:
 
         model_path = prepare_position_variant(TARGET_MODEL, position, args.model_output_root)
         print(f"Model: {model_path}")
+
+        if args.force:
+            _clear_eval_cache(str(model_path))
 
         metrics = run_qwen_alpaca_eval(
             mode="ablation",

@@ -191,6 +191,13 @@ Tam grid (tum 4 pozisyon, GCG yok, ~8-16 saat GPU):
 !python scripts/run_ablation.py
 ```
 
+Onceki cache'i silerek sifirdan calistirmak icin `--force` ekle:
+
+```python
+%cd /content/prompt-injection-defense
+!python scripts/run_ablation.py --force
+```
+
 Belirli pozisyonlari secmek icin:
 
 ```python
@@ -240,6 +247,8 @@ YAML
 !python src/model/setup.py
 !python scripts/run_qwen_alpaca_eval.py --mode baseline --skip-gcg
 !python scripts/run_qwen_alpaca_eval.py --mode defense --skip-gcg
+# Cache'i temizleyip tekrar calistirmak icin:
+# !python scripts/run_qwen_alpaca_eval.py --mode defense --skip-gcg --force
 !python scripts/run_ablation.py --dry-run
 !python scripts/run_ablation.py
 ```

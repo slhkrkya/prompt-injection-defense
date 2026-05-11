@@ -253,3 +253,28 @@ YAML
 !python scripts/run_ablation.py
 ```
 
+Not
+Özet: /content/prompt-injection-defense/docs/raporlar/ablation/summary.csv
+[
+  {
+    "position": "prefix",
+    "win_rate": 0.34595095497676154,
+    "asr": 0.009615384615384616
+  },
+  {
+    "position": "suffix",
+    "win_rate": 0.3493049788477029,
+    "asr": 0.9134615384615384
+  },
+  {
+    "position": "sandwich",
+    "win_rate": 0.35468859401209873,
+    "asr": 0.009615384615384616
+  },
+  {
+    "position": "per_user",
+    "win_rate": 0.3333944114854661,
+    "asr": 0.8942307692307693
+  }
+]
+"Paper prefix pozisyonunu test etmiş ancak pozisyon ablation yapmamış. Bizim bulgular: (a) prefix-öncesi konumlandırma zorunlu — suffix/per_user konumunda tokens neredeyse tamamen etkisiz (ASR prefix 1% vs suffix 91%); (b) sandwich pozisyonu prefix ile aynı ASR'yi korurken utility'de ~1 puan artış sağlıyor."

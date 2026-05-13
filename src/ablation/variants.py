@@ -18,38 +18,46 @@ from src.official_stacks.defensivetoken.core import (
 _BASE_MODEL = SUPPORTED_MODELS[0]
 _STACK_ROOT = Path(__file__).resolve().parents[2] / "src" / "official_stacks" / "defensivetoken"
 
-_DT_STR = "".join(f"[DefensiveToken{i}]" for i in range(5))
+_DT_TOKENS = [f"[DefensiveToken{i}]" for i in range(5)]
 _MSG_BLOCK = "{{- '<|im_start|>' + message['role'] + '\\n' + message['content'] | trim + '\\n\\n<|im_end|>\\n' }}\n"
-_DT_OUTPUT = "{{- '" + _DT_STR + "' }}\n"
-_DT_BLOCK = "{%- if add_defensive_tokens %}\n" + _DT_OUTPUT + "{%- endif %}\n"
 _GEN_BLOCK = "{%- if add_generation_prompt %}\n{{- '<|im_start|>assistant\\n' }}\n{%- endif %}\n"
+
+
+def _token_output(tokens: list[str]) -> str:
+    return "{{- '" + "".join(tokens) + "' }}\n"
+
+
+def _token_block(tokens: list[str]) -> str:
+    return "{%- if add_defensive_tokens %}\n" + _token_output(tokens) + "{%- endif %}\n"
+
+
+def _messages_block() -> str:
+    return "{%- for message in messages %}\n" + _MSG_BLOCK + "{%- endfor %}\n"
+
+
+def _sandwich_tail_template(tail_count: int) -> str:
+    return (
+        _token_block(_DT_TOKENS)
+        + _messages_block()
+        + _token_block(_DT_TOKENS[-tail_count:])
+        + _GEN_BLOCK
+    )
+
 
 POSITION_TEMPLATES = {
     "prefix": CHAT_TEMPLATES[_BASE_MODEL],
-    "suffix": (
-        "{%- for message in messages %}\n"
-        + _MSG_BLOCK
-        + "{%- endfor %}\n"
-        + _DT_BLOCK
-        + _GEN_BLOCK
-    ),
-    "sandwich": (
-        _DT_BLOCK
-        + "{%- for message in messages %}\n"
-        + _MSG_BLOCK
-        + "{%- endfor %}\n"
-        + _DT_BLOCK
-        + _GEN_BLOCK
-    ),
-    "per_user": (
-        "{%- for message in messages %}\n"
-        "{%- if add_defensive_tokens and message['role'] == 'user' %}\n"
-        + _DT_OUTPUT
-        + "{%- endif %}\n"
-        + _MSG_BLOCK
-        + "{%- endfor %}\n"
-        + _GEN_BLOCK
-    ),
+    "sandwich_tail_1": _sandwich_tail_template(1),
+    "sandwich_tail_2": _sandwich_tail_template(2),
+    "sandwich_tail_3": _sandwich_tail_template(3),
+    "sandwich_tail_5": _sandwich_tail_template(5),
+}
+
+POSITION_METADATA = {
+    "prefix": {"learned_tokens": 5, "prefix_tokens": 5, "tail_tokens": 0, "insertion_sites": 1},
+    "sandwich_tail_1": {"learned_tokens": 5, "prefix_tokens": 5, "tail_tokens": 1, "insertion_sites": 2},
+    "sandwich_tail_2": {"learned_tokens": 5, "prefix_tokens": 5, "tail_tokens": 2, "insertion_sites": 2},
+    "sandwich_tail_3": {"learned_tokens": 5, "prefix_tokens": 5, "tail_tokens": 3, "insertion_sites": 2},
+    "sandwich_tail_5": {"learned_tokens": 5, "prefix_tokens": 5, "tail_tokens": 5, "insertion_sites": 2},
 }
 
 ALL_POSITIONS = list(POSITION_TEMPLATES)

@@ -8,7 +8,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.ablation.variants import ALL_POSITIONS, prepare_position_variant
+from src.ablation.variants import ALL_POSITIONS, POSITION_METADATA, prepare_position_variant
 from src.official_stacks.meta_secalign.config import TARGET_MODEL
 from src.official_stacks.meta_secalign.paths import DATA_DIR
 
@@ -21,6 +21,7 @@ _STAGE_CACHE_FILES = ("utility_stage.json", "asr_stage.json", "gcg_stage.json")
 
 def _clear_eval_cache(model_name_or_path: str) -> None:
     from src.official_stacks.meta_secalign.utils import get_output_root
+
     output_root = get_output_root(model_name_or_path)
     for name in _STAGE_CACHE_FILES:
         p = output_root / name
@@ -31,10 +32,14 @@ def _clear_eval_cache(model_name_or_path: str) -> None:
 
 def write_position_report(position: str, metrics: dict, output_dir: Path) -> Path:
     report_path = output_dir / f"{position}.json"
+    metadata = POSITION_METADATA[position]
     payload = {
         "model": TARGET_MODEL,
         "position": position,
-        "n_tokens": 5,
+        "learned_tokens": metadata["learned_tokens"],
+        "prefix_tokens": metadata["prefix_tokens"],
+        "tail_tokens": metadata["tail_tokens"],
+        "insertion_sites": metadata["insertion_sites"],
         "metrics": {
             "win_rate": metrics["win_rate"],
             "asr": metrics["asr"],
@@ -47,49 +52,62 @@ def write_position_report(position: str, metrics: dict, output_dir: Path) -> Pat
 
 def write_summary_csv(results: list[dict], output_path: Path) -> None:
     with output_path.open("w", encoding="utf-8", newline="\n") as fh:
-        writer = csv.DictWriter(fh, fieldnames=["position", "win_rate", "asr"])
+        writer = csv.DictWriter(
+            fh,
+            fieldnames=[
+                "position",
+                "learned_tokens",
+                "prefix_tokens",
+                "tail_tokens",
+                "insertion_sites",
+                "win_rate",
+                "asr",
+            ],
+        )
         writer.writeheader()
         for row in results:
             writer.writerow(row)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Token pozisyon ablation: n=5 sabit, 4 pozisyon karşılaştırması")
+    parser = argparse.ArgumentParser(
+        description="Sandwich tail ablation: prefix sabit, assistant oncesi tail token sayisi degisken"
+    )
     parser.add_argument(
         "--positions",
         nargs="+",
         choices=ALL_POSITIONS,
         default=ALL_POSITIONS,
         metavar="POS",
-        help=f"Değerlendirilecek pozisyonlar (varsayılan: hepsi). Seçenekler: {ALL_POSITIONS}",
+        help=f"Degerlendirilecek pozisyonlar (varsayilan: hepsi). Secenekler: {ALL_POSITIONS}",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
         default=DEFAULT_OUTPUT_DIR,
-        help="Rapor çıkış dizini",
+        help="Rapor cikis dizini",
     )
     parser.add_argument(
         "--model-output-root",
         type=Path,
         default=None,
-        help="Model artifact kök dizini (varsayılan: defensivetoken stack root)",
+        help="Model artifact kok dizini (varsayilan: defensivetoken stack root)",
     )
     parser.add_argument(
         "--openai-config",
         type=Path,
         default=OPENAI_CONFIG_PATH,
-        help="OpenAI config YAML dosyası",
+        help="OpenAI config YAML dosyasi",
     )
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Önceki eval cache'ini sil, sıfırdan çalıştır",
+        help="Onceki eval cache'ini sil, sifirdan calistir",
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Model hazırlama ve eval yapmadan konfigürasyonu yazdır",
+        help="Model hazirlama ve eval yapmadan konfigurasyonu yazdir",
     )
     args = parser.parse_args()
 
@@ -103,7 +121,7 @@ def main() -> None:
         return
 
     if not args.openai_config.exists():
-        raise FileNotFoundError(f"OpenAI config bulunamadı: {args.openai_config}")
+        raise FileNotFoundError(f"OpenAI config bulunamadi: {args.openai_config}")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -111,9 +129,9 @@ def main() -> None:
 
     results = []
     for position in args.positions:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"Pozisyon: {position}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         model_path = prepare_position_variant(TARGET_MODEL, position, args.model_output_root)
         print(f"Model: {model_path}")
@@ -132,11 +150,16 @@ def main() -> None:
         print(f"Rapor: {report_path}")
         print(json.dumps({"win_rate": metrics["win_rate"], "asr": metrics["asr"]}, indent=2))
 
-        results.append({"position": position, "win_rate": metrics["win_rate"], "asr": metrics["asr"]})
+        results.append({
+            "position": position,
+            **POSITION_METADATA[position],
+            "win_rate": metrics["win_rate"],
+            "asr": metrics["asr"],
+        })
 
     summary_path = args.output_dir / "summary.csv"
     write_summary_csv(results, summary_path)
-    print(f"\nÖzet: {summary_path}")
+    print(f"\nOzet: {summary_path}")
     print(json.dumps(results, ensure_ascii=False, indent=2))
 
 

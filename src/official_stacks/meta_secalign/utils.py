@@ -135,9 +135,15 @@ def defensive_token_prefix(tokenizer) -> str:
 
 
 def render_qwen_prompt(tokenizer, instruction: str, user_input: str) -> str:
-    messages = [{"role": "system", "content": instruction}]
     if user_input:
-        messages.append({"role": "user", "content": user_input})
+        # Defense context: instruction is trusted (system), input is untrusted (user)
+        messages = [
+            {"role": "system", "content": instruction},
+            {"role": "user", "content": user_input},
+        ]
+    else:
+        # Utility context: no untrusted data, instruction goes as user message
+        messages = [{"role": "user", "content": instruction}]
     return tokenizer.apply_chat_template(
         messages,
         tokenize=False,
@@ -149,7 +155,7 @@ def render_qwen_prompt(tokenizer, instruction: str, user_input: str) -> str:
 def generate_outputs(model, tokenizer, prompts: list[str]) -> list[str]:
     sampling_params = SamplingParams(
         temperature=0.0,
-        max_tokens=512,
+        max_tokens=8192,
         stop=tokenizer.eos_token,
     )
     outputs = []

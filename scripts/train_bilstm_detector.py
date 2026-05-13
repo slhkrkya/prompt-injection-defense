@@ -14,24 +14,24 @@ from torch.utils.data import DataLoader, Dataset
 from src.bilstm.model import InjectionDetector
 from src.bilstm.tokenizer import WordTokenizer
 from src.official_stacks.meta_secalign.qwen_alpaca import ATTACK_BUILDERS
-from src.official_stacks.meta_secalign.utils import jload
+from src.official_stacks.meta_secalign.utils import jload, split_alpaca_data
 
 DEFAULT_DATA = REPO_ROOT / "src" / "official_stacks" / "meta_secalign" / "data" / "davinci_003_outputs.json"
 DEFAULT_OUTPUT = REPO_ROOT / "bilstm_checkpoint.pt"
 
 
 def generate_training_data(data_path: str) -> tuple[list[str], list[int]]:
-    rows = jload(data_path)
+    train_rows, _ = split_alpaca_data(data_path)
     texts: list[str] = []
     labels: list[int] = []
 
-    # Negative: clean input fields
-    for row in rows:
+    # Negative: clean input fields (train split only)
+    for row in train_rows:
         texts.append(str(row.get("input", "")).strip())
         labels.append(0)
 
-    # Positive: attacked input fields (only rows that have non-empty input)
-    attack_rows = [row for row in rows if str(row.get("input", "")).strip()]
+    # Positive: attacked input fields (train split only)
+    attack_rows = [row for row in train_rows if str(row.get("input", "")).strip()]
     for attack_name in ("ignore", "completion", "completion_ignore"):
         for attacked in [ATTACK_BUILDERS[attack_name](row) for row in attack_rows]:
             texts.append(str(attacked.get("input", "")).strip())

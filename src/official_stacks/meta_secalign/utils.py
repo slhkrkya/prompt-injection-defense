@@ -262,6 +262,22 @@ def run_rate_limited_winrate(openai_config_path: str, rows: list[dict], outputs:
     return wins / len(rows) if rows else 0.0
 
 
+def split_alpaca_data(
+    data_path: str, eval_fraction: float = 0.2, seed: int = 42
+) -> tuple[list[dict], list[dict]]:
+    """Deterministic train/eval split to prevent BiLSTM training on Qwen test rows."""
+    import random
+    rows = jload(data_path)
+    rng = random.Random(seed)
+    indices = list(range(len(rows)))
+    rng.shuffle(indices)
+    n_eval = int(len(indices) * eval_fraction)
+    eval_set = set(indices[:n_eval])
+    train_rows = [rows[i] for i in range(len(rows)) if i not in eval_set]
+    eval_rows = [rows[i] for i in range(len(rows)) if i in eval_set]
+    return train_rows, eval_rows
+
+
 def ensure_alpaca_data_file(data_path: str | None = None) -> Path:
     resolved = Path(resolve_data_path(data_path or str(DATA_DIR / "davinci_003_outputs.json")))
     if not resolved.exists():

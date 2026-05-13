@@ -15,6 +15,7 @@ from .utils import (
     load_transformers_model,
     load_vllm_model,
     render_qwen_prompt,
+    split_alpaca_data,
     tokenizer_uses_defensive_tokens,
     write_summary,
 )
@@ -493,7 +494,8 @@ def run_bilstm_defense_eval(
             asr_artifacts = {name: Path(p) for name, p in arts.items()}
             return _build_bilstm_payload(win_rate, float(cached["asr"]), utility_artifact, asr_artifacts)
 
-    rows = [row for row in jload(data_path) if str(row.get("input", "")).strip()]
+    _, eval_rows = split_alpaca_data(data_path)
+    rows = [row for row in eval_rows if str(row.get("input", "")).strip()]
     metrics: dict[str, float] = {}
     asr_artifacts: dict[str, Path] = {}
     for attack_name in ALPACA_ATTACKS:

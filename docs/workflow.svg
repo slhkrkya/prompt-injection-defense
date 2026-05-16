@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 880" font-family="'Segoe UI', Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 920" font-family="'Segoe UI', Arial, sans-serif">
   <defs>
     <marker id="aBlue"   markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3A7BD5"/></marker>
     <marker id="aGreen"  markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#5BAD6F"/></marker>
@@ -13,7 +13,7 @@
   </defs>
 
   <!-- Background -->
-  <rect width="960" height="880" fill="#0d0f1a" rx="14"/>
+  <rect width="960" height="920" fill="#0d0f1a" rx="14"/>
 
   <!-- ══════════════════════ TITLE ══════════════════════ -->
   <text x="480" y="38" text-anchor="middle" fill="#E0E0F0" font-size="17" font-weight="bold">Proje Akış Şeması — Baseline / Defense / Bi-LSTM-Defense</text>
@@ -151,7 +151,7 @@
   <line x1="722" y1="724" x2="580" y2="762" stroke="#CC4444" stroke-width="1.5" marker-end="url(#aGold)"/>
 
   <!-- ══════════════════════ FINAL: TEZ TABLOSU ══════════════════════ -->
-  <rect x="60" y="766" width="840" height="90" rx="8" fill="#111122" stroke="#6677CC" stroke-width="1.5"/>
+  <rect x="60" y="766" width="840" height="145" rx="8" fill="#111122" stroke="#6677CC" stroke-width="1.5"/>
   <text x="480" y="784" text-anchor="middle" fill="#AABBDD" font-size="12" font-weight="bold">docs/raporlar/qwen_alpaca/{baseline,defense,bilstm-defense}.json</text>
 
   <!-- Table header -->
@@ -163,19 +163,29 @@
   <line x1="80" y1="811" x2="880" y2="811" stroke="#333355" stroke-width="1"/>
 
   <!-- Vertical dividers -->
-  <line x1="260" y1="791" x2="260" y2="856" stroke="#333355" stroke-width="1"/>
-  <line x1="450" y1="791" x2="450" y2="856" stroke="#333355" stroke-width="1"/>
-  <line x1="640" y1="791" x2="640" y2="856" stroke="#333355" stroke-width="1"/>
+  <line x1="260" y1="791" x2="260" y2="879" stroke="#333355" stroke-width="1"/>
+  <line x1="450" y1="791" x2="450" y2="879" stroke="#333355" stroke-width="1"/>
+  <line x1="640" y1="791" x2="640" y2="879" stroke="#333355" stroke-width="1"/>
 
   <!-- Row 1: win_rate -->
   <text x="160" y="828" text-anchor="middle" fill="#77DD77" font-size="11">win_rate</text>
-  <text x="355" y="828" text-anchor="middle" fill="#888"    font-size="11">─────</text>
-  <text x="545" y="828" text-anchor="middle" fill="#888"    font-size="11">─────</text>
-  <text x="745" y="828" text-anchor="middle" fill="#888"    font-size="11">─────</text>
+  <text x="355" y="828" text-anchor="middle" fill="#F5B87A"  font-size="11">0.3494</text>
+  <text x="545" y="828" text-anchor="middle" fill="#D4A0F5"  font-size="11">0.3468</text>
+  <text x="745" y="828" text-anchor="middle" fill="#88EEE0"  font-size="11">0.3621</text>
 
   <!-- Row 2: asr -->
   <text x="160" y="847" text-anchor="middle" fill="#EE7777" font-size="11">asr</text>
-  <text x="355" y="847" text-anchor="middle" fill="#888"    font-size="11">─────</text>
-  <text x="545" y="847" text-anchor="middle" fill="#888"    font-size="11">─────</text>
-  <text x="745" y="847" text-anchor="middle" fill="#888"    font-size="11">─────</text>
+  <text x="355" y="847" text-anchor="middle" fill="#FF6666"  font-size="11">0.9519</text>
+  <text x="545" y="847" text-anchor="middle" fill="#D4A0F5"  font-size="11">0.0096</text>
+  <text x="745" y="847" text-anchor="middle" fill="#88EEE0"  font-size="11">0.0000</text>
+
+  <!-- Row 3: gcg-asr -->
+  <text x="160" y="866" text-anchor="middle" fill="#EE7777" font-size="11">gcg-asr</text>
+  <text x="355" y="866" text-anchor="middle" fill="#555"     font-size="11">—</text>
+  <text x="545" y="866" text-anchor="middle" fill="#555"     font-size="11">—</text>
+  <text x="745" y="866" text-anchor="middle" fill="#555"     font-size="11">—</text>
+
+  <!-- OOD separator + metrics -->
+  <line x1="80" y1="879" x2="880" y2="879" stroke="#333355" stroke-width="1"/>
+  <text x="480" y="896" text-anchor="middle" fill="#6699CC" font-size="10">Bi-LSTM OOD (deepset test)  •  F1: 0.8411  •  Recall: 0.7500  •  FPR: 0.0357</text>
 </svg>

@@ -530,7 +530,8 @@ def _build_bilstm_payload(win_rate: float, asr: float, utility_artifact: Path, a
 
 def run_qwen_alpaca_eval(mode: str, model_name_or_path: str, openai_config_path: str, include_gcg: bool = True, bilstm_checkpoint: str | None = None, gcg_max_samples: int = 50) -> dict:
     data_path = str(ensure_alpaca_data_file())
-    output_root = get_output_root(model_name_or_path)
+    # mode subdirectory ile cache'lerin modlar arası çakışmasını önle
+    output_root = get_output_root(model_name_or_path) / mode
     output_root.mkdir(parents=True, exist_ok=True)
 
     if mode == "bilstm-defense":

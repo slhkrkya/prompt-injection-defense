@@ -50,7 +50,7 @@
   <text x="480" y="330" text-anchor="middle" fill="#8855AA" font-size="11">Model yanıtı vs davinci_003 referansı  →  Win-Rate = %35.0</text>
 
   <!-- ══════════ SECTION 2 ══════════ -->
-  <text x="30" y="362" fill="#444" font-size="11" font-style="italic">② ASR Değerlendirmesi  (~400 saldırılı örnek — ignore / completion / completion_ignore)</text>
+  <text x="30" y="362" fill="#444" font-size="11" font-style="italic">② ASR Değerlendirmesi  (~80 saldırılı örnek — eval split %20 — ignore / completion / completion_ignore)</text>
   <line x1="30" y1="366" x2="930" y2="366" stroke="#2a2a3a" stroke-width="1"/>
 
   <!-- ASR INPUT -->
@@ -86,7 +86,7 @@
 
   <rect x="60" y="576" width="178" height="54" rx="7" fill="#1f0505" stroke="#CC4444" stroke-width="1.5"/>
   <text x="149" y="597" text-anchor="middle" fill="#FF6666" font-size="12" font-weight="bold">BLOKE</text>
-  <text x="149" y="613" text-anchor="middle" fill="#AA3333" font-size="10">output = "I cannot comply..."</text>
+  <text x="149" y="613" text-anchor="middle" fill="#AA3333" font-size="10">output = "I cannot comply with these instructions."</text>
   <text x="149" y="625" text-anchor="middle" fill="#AA3333" font-size="10">generator = bilstm-blocked</text>
 
   <!-- NO → DEFENDED MODEL -->

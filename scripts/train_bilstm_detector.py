@@ -150,15 +150,23 @@ def train(
     rogue_security_path: str | None = None,
     hackaprompt_path: str | None = None,
     include_hackaprompt: bool = False,
+    include_alpaca: bool = False,
 ) -> None:
     random.seed(seed)
     torch.manual_seed(seed)
 
-    print("Generating training data...")
-    texts, labels = generate_training_data(data_path)
+    texts: list[str] = []
+    labels: list[int] = []
+
+    if include_alpaca:
+        print("Generating AlpacaFarm training data...")
+        alpaca_texts, alpaca_labels = generate_training_data(data_path)
+        texts.extend(alpaca_texts)
+        labels.extend(alpaca_labels)
+        print(f"  +{len(alpaca_texts)} AlpacaFarm örnek")
 
     if include_deepset:
-        print("  deepset/prompt-injections train split ekleniyor...")
+        print("deepset/prompt-injections train split ekleniyor...")
         try:
             ds_texts, ds_labels = load_deepset_train()
             texts.extend(ds_texts)
@@ -168,7 +176,7 @@ def train(
             print(f"  UYARI: deepset yüklenemedi — {exc}")
 
     if rogue_security_path or hf_token:
-        print("  rogue-security/prompt-injections-benchmark ekleniyor...")
+        print("rogue-security/prompt-injections-benchmark ekleniyor...")
         try:
             rs_texts, rs_labels = load_rogue_security(local_path=rogue_security_path, hf_token=hf_token)
             texts.extend(rs_texts)
@@ -178,7 +186,7 @@ def train(
             print(f"  UYARI: rogue-security yüklenemedi — {exc}")
 
     if hackaprompt_path or include_hackaprompt:
-        print("  HackAPrompt dataset ekleniyor...")
+        print("HackAPrompt dataset ekleniyor...")
         try:
             hp_texts, hp_labels = load_hackaprompt(local_path=hackaprompt_path, hf_token=hf_token)
             texts.extend(hp_texts)
@@ -290,10 +298,13 @@ if __name__ == "__main__":
     parser.add_argument("--rogue-security", default=None, help="rogue-security test.csv local yolu")
     parser.add_argument("--hackaprompt", default=None, help="hackaprompt.parquet local yolu")
     parser.add_argument("--hackaprompt-hf", action="store_true", help="HackAPrompt'u HuggingFace'den indir")
+    parser.add_argument("--include-alpaca", action="store_true",
+                        help="AlpacaFarm'dan türetilmiş örnekleri eğitime ekle (ASR testi ile veri örtüşmesi oluşturur)")
     args = parser.parse_args()
     train(args.data, args.output, args.epochs, args.batch_size, args.lr, args.seed,
           include_deepset=not args.no_deepset,
           hf_token=args.hf_token,
           rogue_security_path=args.rogue_security,
           hackaprompt_path=args.hackaprompt,
-          include_hackaprompt=args.hackaprompt_hf)
+          include_hackaprompt=args.hackaprompt_hf,
+          include_alpaca=args.include_alpaca)

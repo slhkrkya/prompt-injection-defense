@@ -494,8 +494,7 @@ def run_bilstm_defense_eval(
             asr_artifacts = {name: Path(p) for name, p in arts.items()}
             return _build_bilstm_payload(win_rate, float(cached["asr"]), utility_artifact, asr_artifacts)
 
-    _, eval_rows = split_alpaca_data(data_path)
-    rows = [row for row in eval_rows if str(row.get("input", "")).strip()]
+    rows = [row for row in jload(data_path) if str(row.get("input", "")).strip()]
     metrics: dict[str, float] = {}
     asr_artifacts: dict[str, Path] = {}
     for attack_name in ALPACA_ATTACKS:

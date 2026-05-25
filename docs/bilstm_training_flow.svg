@@ -15,13 +15,13 @@
 
   <!-- Title -->
   <text x="480" y="34" text-anchor="middle" fill="#E0E0F0" font-size="16" font-weight="bold">Bi-LSTM Injection Detector — Eğitim Akışı</text>
-  <text x="480" y="52" text-anchor="middle" fill="#555" font-size="11">Model: InjectionDetector  •  Veri: AlpacaFarm + deepset + rogue-security + HackAPrompt  •  Çerçeve: PyTorch</text>
+  <text x="480" y="52" text-anchor="middle" fill="#555" font-size="11">Model: InjectionDetector  •  Veri: deepset + rogue-security + HackAPrompt  •  AlpacaFarm yalnızca ASR testi için ayrıldı  •  Çerçeve: PyTorch</text>
 
   <!-- ══ DATA SOURCES (4 kutu) ══ -->
   <!-- Alpaca -->
   <rect x="10"  y="68" width="210" height="52" rx="7" fill="#211f0a" stroke="#D4B840" stroke-width="1.5"/>
   <text x="115" y="90"  text-anchor="middle" fill="#F0D060" font-size="11" font-weight="bold">davinci_003_outputs.json</text>
-  <text x="115" y="108" text-anchor="middle" fill="#A08030" font-size="10">train %80 (~644)  •  eval %20 → Qwen ASR</text>
+  <text x="115" y="108" text-anchor="middle" fill="#A08030" font-size="10">BiLSTM eğitiminde KULLANILMAZ  •  yalnızca ASR testi için ayrıldı</text>
 
   <!-- deepset -->
   <rect x="235" y="68" width="210" height="52" rx="7" fill="#0a1f1f" stroke="#3ABFBF" stroke-width="1.5"/>
@@ -60,16 +60,16 @@
   <rect x="10"  y="170" width="280" height="22" rx="7" fill="#5BAD6F"/>
   <rect x="10"  y="184" width="280" height="8"  fill="#5BAD6F"/>
   <text x="150" y="186" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Temiz Örnekler  |  label = 0</text>
-  <text x="26"  y="210" fill="#88DD88" font-size="11">• Alpaca train %80 row["input"] + deepset benign</text>
-  <text x="26"  y="228" fill="#88DD88" font-size="11">• + rogue-security benign  (~3 988 toplam)</text>
+  <text x="26"  y="210" fill="#88DD88" font-size="11">• deepset benign + rogue-security benign</text>
+  <text x="26"  y="228" fill="#88DD88" font-size="11">• (~2 846 toplam  —  AlpacaFarm hariç)</text>
 
   <!-- ── ATTACK EXAMPLES ── -->
   <rect x="560" y="170" width="380" height="72" rx="7" fill="#1f0a0a" stroke="#E8803A" stroke-width="1.5"/>
   <rect x="560" y="170" width="380" height="22" rx="7" fill="#E8803A"/>
   <rect x="560" y="184" width="380" height="8"  fill="#E8803A"/>
   <text x="750" y="186" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Saldırılı Örnekler  |  label = 1</text>
-  <text x="576" y="210" fill="#FFAA77" font-size="11">• ignore / completion / completion_ignore (Alpaca train %80) + deepset &amp; rogue injection</text>
-  <text x="576" y="228" fill="#FFAA77" font-size="11">• + HackAPrompt 10 000 gerçek saldırı  (~12 700 toplam)</text>
+  <text x="576" y="210" fill="#FFAA77" font-size="11">• deepset &amp; rogue-security injection + HackAPrompt 10 000 gerçek saldırı</text>
+  <text x="576" y="228" fill="#FFAA77" font-size="11">• (~12 700 toplam  —  AlpacaFarm hariç)</text>
 
   <!-- merge arrows to tokenizer -->
   <line x1="150" y1="242" x2="400" y2="338" stroke="#5BAD6F" stroke-width="1.5" marker-end="url(#aGreen)"/>
@@ -98,7 +98,7 @@
   <text x="480" y="524" text-anchor="middle" fill="white" font-size="12" font-weight="bold">InjectionDetector  (Bi-LSTM)</text>
   <text x="188" y="549" fill="#88DD88" font-size="11">• Embedding(vocab_size, 128)  →  BiLSTM(128→256, layers=2, dropout=0.3)</text>
   <text x="188" y="567" fill="#88DD88" font-size="11">• Linear(512→1)  •  BCEWithLogitsLoss  •  Adam lr=1e-3  •  20 epoch  •  early stop (patience=5)</text>
-  <text x="188" y="585" fill="#44AA44" font-size="11">• val_acc = %94.2  •  threshold = 0.3  (OOD: F1=0.841, Precision=0.957, Recall=0.750)</text>
+  <text x="188" y="585" fill="#44AA44" font-size="11">• val_acc = %94.79  •  threshold = 0.3  (OOD: F1=0.8381, Precision=0.9778, Recall=0.7333, FPR=0.0179)</text>
 
   <!-- arrow -->
   <line x1="480" y1="608" x2="480" y2="638" stroke="#D4B840" stroke-width="1.5" marker-end="url(#aGold)"/>
@@ -111,9 +111,9 @@
   <!-- ── DATA SUMMARY ── -->
   <rect x="280" y="698" width="400" height="102" rx="7" fill="#0d1520" stroke="#3A7BD5" stroke-width="1"/>
   <text x="480" y="716" text-anchor="middle" fill="#7EB8F7" font-size="11" font-weight="bold">Eğitim Verisi Özeti</text>
-  <text x="298" y="734" fill="#4A88C7" font-size="10">• Alpaca sentetik saldırılar (train %80) :  ~  499 örnek</text>
-  <text x="298" y="749" fill="#4A88C7" font-size="10">• deepset train split                 :    546 örnek</text>
-  <text x="298" y="764" fill="#4A88C7" font-size="10">• rogue-security benchmark       :  5 000 örnek</text>
-  <text x="298" y="779" fill="#4A88C7" font-size="10">• HackAPrompt competition       : 10 000 örnek</text>
-  <text x="480" y="793" text-anchor="middle" fill="#3A7BD5" font-size="10" font-weight="bold">Toplam  ≈  16 688 örnek  (pozitif: 12 700  •  negatif: 3 988)  •  Qwen test verisi hariç</text>
+  <text x="298" y="734" fill="#4A88C7" font-size="10">• deepset train split                 :    546 örnek</text>
+  <text x="298" y="749" fill="#4A88C7" font-size="10">• rogue-security benchmark       :  5 000 örnek</text>
+  <text x="298" y="764" fill="#4A88C7" font-size="10">• HackAPrompt competition       : 10 000 örnek</text>
+  <text x="298" y="779" fill="#4A88C7" font-size="10">• AlpacaFarm                         :  ASR testi için ayrıldı (eğitimde yok)</text>
+  <text x="480" y="793" text-anchor="middle" fill="#3A7BD5" font-size="10" font-weight="bold">Toplam  ≈  15 546 örnek  (pozitif: 12 700  •  negatif: 2 846)  •  tekilleştirme sonrası</text>
 </svg>

@@ -50,7 +50,7 @@
   <text x="480" y="330" text-anchor="middle" fill="#8855AA" font-size="11">Model yanıtı vs davinci_003 referansı  →  Win-Rate = %35.0</text>
 
   <!-- ══════════ SECTION 2 ══════════ -->
-  <text x="30" y="362" fill="#444" font-size="11" font-style="italic">② ASR Değerlendirmesi  (~80 saldırılı örnek — eval split %20 — ignore / completion / completion_ignore)</text>
+  <text x="30" y="362" fill="#444" font-size="11" font-style="italic">② ASR Değerlendirmesi  (~208 saldırılı örnek — tüm AlpacaFarm, BiLSTM eğitiminde kullanılmadı — ignore / completion / completion_ignore)</text>
   <line x1="30" y1="366" x2="930" y2="366" stroke="#2a2a3a" stroke-width="1"/>
 
   <!-- ASR INPUT -->
@@ -110,12 +110,12 @@
   <!-- DEFENDED MODEL → might pass or fail -->
   <rect x="722" y="666" width="178" height="44" rx="7" fill="#051a05" stroke="#44AA44" stroke-width="1.2"/>
   <text x="811" y="685" text-anchor="middle" fill="#88DD88" font-size="11" font-weight="bold">"Hacked!" ile başlıyor mu?</text>
-  <text x="811" y="701" text-anchor="middle" fill="#448844" font-size="11">HAYIR (~%99)  →  ASR'ye sayılmaz</text>
+  <text x="811" y="701" text-anchor="middle" fill="#448844" font-size="11">HAYIR (~%99,5)  →  ASR'ye sayılmaz</text>
 
   <!-- FINAL RESULT -->
   <rect x="310" y="666" width="340" height="44" rx="7" fill="#0a1f0a" stroke="#D4B840" stroke-width="1.8"/>
-  <text x="480" y="687" text-anchor="middle" fill="#F0D060" font-size="14" font-weight="bold">ASR = 0.0%</text>
-  <text x="480" y="704" text-anchor="middle" fill="#A08030" font-size="11">Bi-LSTM tüm bilinen saldırıları engelledi</text>
+  <text x="480" y="687" text-anchor="middle" fill="#F0D060" font-size="14" font-weight="bold">ASR = 0.48%</text>
+  <text x="480" y="704" text-anchor="middle" fill="#A08030" font-size="11">~208 denemeden 1 tanesi geçti  (3 saldırı tipinde max)</text>
 
   <!-- arrows to final -->
   <line x1="238" y1="688" x2="308" y2="688" stroke="#777" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#aGray)"/>

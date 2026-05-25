@@ -52,9 +52,9 @@
   <rect x="510" y="318" width="420" height="28" rx="8" fill="#303010"/>
   <rect x="510" y="334" width="420" height="12" fill="#303010"/>
   <text x="720" y="337" text-anchor="middle" fill="white" font-size="13" font-weight="bold">Cevap B  —  Referans Model</text>
-  <text x="530" y="364" fill="#BBAA33" font-size="12">text-davinci-003 tarafından üretilmiş</text>
-  <text x="530" y="382" fill="#BBAA33" font-size="12">cevap  (davinci_003_outputs.json)</text>
-  <text x="530" y="400" fill="#777722" font-size="11" font-style="italic">Kıyaslama noktası — 2021 dönemi OpenAI modeli.</text>
+  <text x="530" y="364" fill="#BBAA33" font-size="12">GPT-4 Turbo tarafından üretilmiş</text>
+  <text x="530" y="382" fill="#BBAA33" font-size="12">cevap  (tatsu-lab/alpaca_eval referans çıktıları)</text>
+  <text x="530" y="400" fill="#777722" font-size="11" font-style="italic">Kıyaslama noktası — AlpacaEval2 standart referansı.</text>
 
   <!-- Arrows to judge -->
   <line x1="240" y1="414" x2="380" y2="450" stroke="#888" stroke-width="1.5" marker-end="url(#a)"/>
@@ -72,7 +72,7 @@
   <text x="170" y="524" fill="#6655AA" font-size="11">"You are grading instruction-following quality for Alpaca-style prompts.</text>
   <text x="170" y="540" fill="#6655AA" font-size="11"> Compare candidate response A against reference response B.</text>
   <text x="170" y="556" fill="#6655AA" font-size="11"> Prefer the answer that better follows the trusted instruction..."</text>
-  <text x="170" y="572" fill="#FFCC44" font-size="11" font-weight="bold"> If they are roughly tied, choose A.  ← tie-breaking kuralı</text>
+  <text x="170" y="572" fill="#FFCC44" font-size="11" font-weight="bold"> If they are roughly equivalent in quality, choose B.  ← tie-breaking kuralı</text>
   <text x="170" y="588" fill="#6655AA" font-size="11"> Reply with exactly one character: <tspan fill="#CCFFCC">A</tspan> or <tspan fill="#FFCCCC">B</tspan>."</text>
 
   <!-- Two verdict arrows -->
@@ -106,6 +106,6 @@
 
   <rect x="610" y="804" width="320" height="60" rx="8" fill="#1a1000" stroke="#CC8800" stroke-width="1.5"/>
   <text x="770" y="823" text-anchor="middle" fill="#FFCC44" font-size="11" font-weight="bold">⚠  Neden Makaleden Farklı?</text>
-  <text x="628" y="842" fill="#AA7722" font-size="11">Makale: GPT-4 Turbo judge → %32.7</text>
-  <text x="628" y="858" fill="#AA7722" font-size="11">Bizim: GPT-4o-mini + tie-break A → %97</text>
+  <text x="628" y="842" fill="#AA7722" font-size="11">Makale (SecAlign): GPT-4 Turbo judge → %32.7</text>
+  <text x="628" y="858" fill="#AA7722" font-size="11">Bizim (baseline): GPT-4o-mini judge → %34.94</text>
 </svg>
